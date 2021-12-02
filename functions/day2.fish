@@ -1,7 +1,3 @@
-set --global horizontal_position
-set --global depth_position
-set --global aim
-
 function day2 \
     --description "https://adventofcode.com/2021/day/2: `usage - day2 1 data.txt`" \
     --argument-names part datafile
@@ -14,6 +10,7 @@ function day2 \
     set --global depth_position 0
     set --global aim 0
     set --local movement_data (cat $datafile)
+
     for instruction in $movement_data
         move $part (string split ' ' $instruction)
     end
