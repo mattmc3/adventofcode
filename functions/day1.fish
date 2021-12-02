@@ -1,3 +1,11 @@
+function day1 \
+    --description "https://adventofcode.com/2021/day/1" \
+    --argument-names part datafile
+
+    set part (string match --regex '.$' $part)
+    day1part$part $datafile
+end
+
 function day1part1 \
     --description "https://adventofcode.com/2021/day/1" \
     --argument-names datafile
@@ -24,14 +32,14 @@ function day1part1 \
     echo "Depth increased $depth_increased_counter times"
     echo "Depth decreased $depth_decreased_counter times"
     echo "Depth stayed same $depth_same_counter times"
-    echo "Sanity check "(count $depth_data)" = "(math $depth_increased_counter + $depth_decreased_counter + $depth_same_counter + 1)
+    # echo "Sanity check "(count $depth_data)" = "(math $depth_increased_counter + $depth_decreased_counter + $depth_same_counter + 1)
 end
 
 function sum \
     --description "sum all the numbers provided"
 
     test (count $argv) -gt 0 || set argv 0
-    math (string join " + " $argv)
+    string join + $argv | math
 end
 
 function day1part2 \
@@ -63,5 +71,5 @@ function day1part2 \
     echo "Depth increased $depth_increased_counter times"
     echo "Depth decreased $depth_decreased_counter times"
     echo "Depth stayed same $depth_same_counter times"
-    echo "Sanity check "(math (count $depth_data) - 2)" = "(math $depth_increased_counter + $depth_decreased_counter + $depth_same_counter + 1)
+    # echo "Sanity check "(math (count $depth_data) - 2)" = "(math $depth_increased_counter + $depth_decreased_counter + $depth_same_counter + 1)
 end

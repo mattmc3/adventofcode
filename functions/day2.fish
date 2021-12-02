@@ -2,6 +2,7 @@ function day2 \
     --description "https://adventofcode.com/2021/day/2: `usage - day2 1 data.txt`" \
     --argument-names part datafile
 
+    set part (string match --regex '.$' $part)
     if test "$part" -ne 1 && test "$part" -ne 2
         echo "Expecting part number 1 or 2 '$part'" >&2 && return 1
     end
@@ -18,7 +19,7 @@ function day2 \
     echo "horizontal_position: $horizontal_position"
     echo "depth_position: $depth_position"
     echo "aim: $aim"
-    echo "multiplied: " (math $horizontal_position '*' $depth_position)
+    echo "multiplied:" (math $horizontal_position '*' $depth_position)
 
     set --erase horizontal_position
     set --erase depth_position
