@@ -1,8 +1,11 @@
 function day1part1 \
-    --description "https://adventofcode.com/2021/day/1"
+    --description "https://adventofcode.com/2021/day/1" \
+    --argument-names datafile
 
-    set --local inputfile (realpath (status dirname)/day1_input.txt)
-    set --local depth_data (cat $inputfile)
+    if not test -f $datafile
+        echo "Expecting data files" >&2 && return
+    end
+    set --local depth_data (cat $datafile)
     set --local depth_increased_counter 0
     set --local depth_decreased_counter 0
     set --local depth_same_counter 0
@@ -27,18 +30,19 @@ end
 function sum \
     --description "sum all the numbers provided"
 
-    set --local result 0
-    for num in $argv
-        set result (math $result + $num)
-    end
-    echo $result
+    test (count $argv) -gt 0 || set argv 0
+    math (string join " + " $argv)
 end
 
 function day1part2 \
-    --description "https://adventofcode.com/2021/day/1#part2"
+    --description "https://adventofcode.com/2021/day/1#part2" \
+    --argument-names datafile
 
-    set --local inputfile (realpath (status dirname)/day1_input.txt)
-    set --local depth_data (cat $inputfile)
+    if not test -f $datafile
+        echo "Expecting data files" >&2 && return
+    end
+
+    set --local depth_data (cat $datafile)
     set --local depth_increased_counter 0
     set --local depth_decreased_counter 0
     set --local depth_same_counter 0
