@@ -6,6 +6,7 @@ function day2 \
     if test "$part" -ne 1 && test "$part" -ne 2
         echo "Expecting part number 1 or 2 '$part'" >&2 && return 1
     end
+    test -n "$datafile" || set datafile (datafile-path (status filename))
 
     set --global horizontal_position 0
     set --global depth_position 0

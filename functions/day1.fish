@@ -3,6 +3,8 @@ function day1 \
     --argument-names part datafile
 
     set part (string match --regex '.$' $part)
+    test -n "$datafile" || set datafile (datafile-path (status filename))
+
     day1part$part $datafile
 end
 

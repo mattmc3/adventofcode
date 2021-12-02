@@ -8,10 +8,12 @@ This year I am doing the Advent of Code puzzles using the awesome
 ## Setup
 
 ```fish
-source ./functions/*.fish
+for f in ./functions/*.fish; . $f; end
 ```
 
 ## Day 1
+
+Test results:
 
 ```
 $ day1 part1 ./data/day1.test.dat
@@ -27,7 +29,17 @@ Depth decreased 1 times
 Depth stayed same 1 times
 ```
 
+Real results:
+
+```fish
+$ day1 part1
+$ day1 part2
+# no cheating!
+```
+
 ## Day 2
+
+Test results:
 
 ```
 $ day2 part1 ./data/day2.test.dat
@@ -43,4 +55,12 @@ horizontal_position: 15
 depth_position: 60
 aim: 10
 multiplied: 900
+```
+
+Real results:
+
+```fish
+$ day1 part1
+$ day1 part2
+# no cheating!
 ```
