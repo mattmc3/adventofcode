@@ -12,68 +12,110 @@ function day4 \
     day4part$part $datafile
 end
 
-function day4part1
-    set numbers "7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1"
-    set board 14 21 17 24 4 : \
-              10 16 15  9 19 : \
-              18  8 23 26 20 : \
-              22 11 13  6  5 : \
-               2  0 12  3  7 :
-    # set board 14 10 18 22  2 : \
-    #           21 16  8 11  0 : \
-    #           17 15 23 13 12 : \
-    #           24  9 26  6  3 : \
-    #            4 19 20  5  7 :
-    call-bingo-numbers $numbers $board
+function day4part1 \
+    --argument-names datafile
+
+    load-bingo-file $datafile
+    set --global best_bingo_call_count 999
+    set --global best_bingo_card
+    set --global best_bingo_card_score
+    for card_name in $bingo_card_names
+        play-bingo-card $card_name
+    end
+    echo "Best bingo card: $card_name = $$card_name"
+    echo "Best bingo card won at call #: $best_bingo_call_count"
+    echo "Best bingo card score: $best_bingo_card_score"
+    cleanup
 end
 
-function call-bingo-numbers
-    set numbers (string split ',' $argv[1])
-    set board $argv[2..]
+function load-bingo-file \
+    --argument-names datafile
 
-    for num in $numbers
-        echo "calling $num"
-        set board (string replace --all --regex '\b'$num'\b' 'x' $board)
-        echo $board
-        if check-bingo-board $board
-            echo "scoring..."
-            score-bingo-board $num $board
-            break
-        end
+    set --local data (cat $datafile)
+
+    set --global bingo_numbers (string split ',' $data[1])
+    set --global bingo_card_names
+
+    set --local datalen (count $data)
+    set --local startpos 3
+    set --local endpos (math $startpos + 4)
+    set --local bingo_card_id 1
+
+    while test $startpos -lt $datalen
+        set bingo_card (string join ' : ' $data[$startpos..$endpos])
+        set bingo_card (string split --no-empty ' ' "$bingo_card")
+
+        set --global --append bingo_card_names bingo_card_$bingo_card_id
+        set --global bingo_card_$bingo_card_id $bingo_card
+
+        set startpos (math $endpos + 2)
+        set endpos (math $startpos + 4)
+        set bingo_card_id (math $bingo_card_id + 1)
     end
 end
 
-function check-bingo-board
-    set strboard (string replace --all " " "" "$argv")
-    set pvtboard (pivot-bingo-board $argv)
-    set flipboard (string replace --all " " "" "$pvtboard")
-    if string match --quiet --regex 'x{5}' $strboard $flipboard
+function play-bingo-card \
+    --argument-names card_name
+
+    set card $$card_name
+    set call_count 0
+    for num in $bingo_numbers
+        set call_count (math $call_count + 1)
+        if test $call_count -gt $best_bingo_call_count
+            echo "Card $card_name loses..."
+            return 1
+        end
+
+        set card (string replace --all --regex '\b'$num'\b' 'x' $card)
+        if check-bingo-card $card
+            echo "current winner is $card_name at call number $call_count... scoring..."
+            set --global best_bingo_call_count $call_count
+            set --global best_bingo_card $card_name
+            set --global best_bingo_card_score (score-bingo-card $num $card)
+            return 0
+        end
+    end
+    return 1
+end
+
+function check-bingo-card
+    set strcard (string replace --all " " "" "$argv")
+    set pvtcard (pivot-bingo-card $argv)
+    set flipcard (string replace --all " " "" "$pvtcard")
+    if string match --quiet --regex 'x{5}' $strcard $flipcard
         echo "BINGO!"
         return
     end
     return 1
 end
 
-function pivot-bingo-board \
+function pivot-bingo-card \
     --description "swap rows and columns"
 
-    set --local board (string match --invert ':' $argv)
-    set --local newboard
+    set --local card (string match --invert ':' $argv)
+    set --local newcard
     for i in (seq 5)
         for offset in (seq 0 5 20)
-            set --append newboard $board[(math $i + $offset)]
+            set --append newcard $card[(math $i + $offset)]
         end
-        set --append newboard :
     end
-    string split ' ' $newboard
+    string split --no-empty ' ' $newcard
     return 0
 end
 
-function score-bingo-board \
+function score-bingo-card \
     --description "Sum remaining numbers and multiply by final number called" \
     --argument-names final_called_number
 
-    set --local board_nums (string match --invert --regex '[:x]' $argv[2..])
-    set --local sum (string join '+' $board_nums | math)
+    set --local card_nums (string match --invert --regex '[:x]' $argv[2..])
+    set --local sum (string join '+' $card_nums | math)
     math $final_called_number x $sum
+end
+
+function cleanup
+    for name in $bingo_card_names
+        set -e $name
+    end
+    set -e bingo_numbers
+    set -e bingo_card_names
 end
