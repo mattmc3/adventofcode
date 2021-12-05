@@ -1,5 +1,5 @@
 function day4 \
-    --description "https://adventofcode.com/2021/day/3 - usage: day4 part1 datafile.dat" \
+    --description "https://adventofcode.com/2021/day/4 - usage: day4 part1 datafile.dat" \
     --argument-names part datafile
 
     set part (string match --regex '.$' $argv[1])
@@ -20,11 +20,27 @@ function day4part1 \
     set --global best_bingo_card
     set --global best_bingo_card_score
     for card_name in $bingo_card_names
-        play-bingo-card $card_name
+        play-bingo-card-to-win $card_name
     end
-    echo "Best bingo card: $card_name = $$card_name"
+    echo "Best bingo card: $best_bingo_card = $$best_bingo_card"
     echo "Best bingo card won at call #: $best_bingo_call_count"
     echo "Best bingo card score: $best_bingo_card_score"
+    cleanup
+end
+
+function day4part2 \
+    --argument-names datafile
+
+    load-bingo-file $datafile
+    set --global worst_bingo_call_count 0
+    set --global worst_bingo_card
+    set --global worst_bingo_card_score
+    for card_name in $bingo_card_names
+        play-bingo-card-to-lose $card_name
+    end
+    echo "Worst bingo card: $worst_bingo_card = $$worst_bingo_card"
+    echo "Worst bingo card won at call #: $worst_bingo_call_count ($bingo_numbers[$worst_bingo_call_count])"
+    echo "Worst bingo card score: $worst_bingo_card_score"
     cleanup
 end
 
@@ -54,7 +70,7 @@ function load-bingo-file \
     end
 end
 
-function play-bingo-card \
+function play-bingo-card-to-win \
     --argument-names card_name
 
     set card $$card_name
@@ -68,10 +84,34 @@ function play-bingo-card \
 
         set card (string replace --all --regex '\b'$num'\b' 'x' $card)
         if check-bingo-card $card
-            echo "current winner is $card_name at call number $call_count... scoring..."
+            set --local score (score-bingo-card $num $card)
+            echo "current winner is $card_name at call number $call_count... score=$score"
             set --global best_bingo_call_count $call_count
             set --global best_bingo_card $card_name
-            set --global best_bingo_card_score (score-bingo-card $num $card)
+            set --global best_bingo_card_score $score
+            return 0
+        end
+    end
+    return 1
+end
+
+function play-bingo-card-to-lose \
+    --argument-names card_name
+
+    set card $$card_name
+    set call_count 0
+    for num in $bingo_numbers
+        set call_count (math $call_count + 1)
+        set card (string replace --all --regex '\b'$num'\b' 'x' $card)
+        if check-bingo-card $card
+            set --local score (score-bingo-card $num $card)
+            echo "card $card_name will win at call number $call_count... score=$score"
+            if test $call_count -gt $worst_bingo_call_count
+                echo "card $card_name is the current worst card..."
+                set --global worst_bingo_call_count $call_count
+                set --global worst_bingo_card $card_name
+                set --global worst_bingo_card_score $score
+            end
             return 0
         end
     end
@@ -82,7 +122,7 @@ function check-bingo-card
     set strcard (string replace --all " " "" "$argv")
     set pvtcard (pivot-bingo-card $argv)
     set flipcard (string replace --all " " "" "$pvtcard")
-    if string match --quiet --regex 'x{5}' $strcard $flipcard
+    if string match --quiet --regex 'x{5}' $strcard ':' $flipcard
         echo "BINGO!"
         return
     end
@@ -98,6 +138,7 @@ function pivot-bingo-card \
         for offset in (seq 0 5 20)
             set --append newcard $card[(math $i + $offset)]
         end
+        test $i -lt 5 && set --append newcard ':'
     end
     string split --no-empty ' ' $newcard
     return 0
@@ -118,4 +159,13 @@ function cleanup
     end
     set -e bingo_numbers
     set -e bingo_card_names
+
+    set --erase best_bingo_call_count
+    set --erase best_bingo_card
+    set --erase best_bingo_card_score
+
+    set --erase worst_bingo_call_count
+    set --erase worst_bingo_card
+    set --erase worst_bingo_card_score
+    return 0
 end
