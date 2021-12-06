@@ -1,10 +1,12 @@
 function day6 \
-    --description "https://adventofcode.com/2021/day/6 - usage: day6 datafile.dat" \
-    --argument-names datafile
+    --description "https://adventofcode.com/2021/day/6 - usage: day6 part1 datafile.dat" \
+    --argument-names part datafile
 
     test -f "$datafile"; or echo >&2 "file expected" && return 1
+    set part (string match --regex '.$' $part)
+    set --local total_days (test $part -eq 1 && echo 80 || echo 256)
+
     set --local lantern_fish_timers (string split ',' <$datafile)
-    set --local total_days 256
     set --local new_fish_each_day (string split '' (string repeat -n $total_days 0))
     set --local fish_alive_each_day (string split '' (string repeat -n $total_days 0))
 
