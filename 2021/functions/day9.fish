@@ -32,7 +32,6 @@ function day9part1 \
                 set left $$arrays[$y][(math $x - 1)] || set left 9
             test $x -lt (count $$arrays[$y]) && \
                 set right $$arrays[$y][(math $x + 1)] || set right 9
-            #echo $value $up $right $down $left
             if test $value -lt $up && \
                test $value -lt $down && \
                test $value -lt $left && \
@@ -44,16 +43,112 @@ function day9part1 \
     end
 
     echo $low_point_risk
-    # echo $arr_names
-    # for id in (seq (count $arr_names))
-    #     set arr arr$id
-    #     for idx in (seq (count $$arr))
-    #         set value $arr[$idx]
-    #         echo $value
-    #     end
-    # end
 end
 
-function day9part2
-    # insert code here
+function day9part2 \
+    --argument-names datafile
+
+    set --local data (cat $datafile)
+    set --local id 0
+    set --local basin_grids
+    for row in $data
+        set id (math $id + 1)
+        set --append basin_grids basin_grid$id
+        set basin_grid$id (string split '' $row)
+    end
+
+    set --local ball_grids
+    for id in (seq (count $basin_grids))
+        set --append ball_grids ball_grid$id
+        set ball_grid$id (string repeat -n (count $$basin_grids[$id]) 1 | string split '')
+    end
+
+    for y in (seq (count $ball_grids))
+        for x in (seq (count $$ball_grids[$y]))
+            set --local basin_depth $$basin_grids[$y][$x]
+
+            if test $basin_depth -eq 9
+                set $ball_grids[$y][$x] 0
+                continue
+            end
+
+            set curx $x
+            set cury $y
+            while true
+                set --local balls $$ball_grids[$cury][$curx]
+                set --local cur_basin_depth $$basin_grids[$cury][$curx]
+                set --local left_basin_depth 9; set --local right_basin_depth 9
+                set --local up_basin_depth 9; set --local down_basin_depth 9
+
+                test $cury -gt 1 && \
+                    set up_basin_depth $$basin_grids[(math $cury - 1)][$curx]
+                test $cury -lt (count $basin_grids) && \
+                    set down_basin_depth $$basin_grids[(math $cury + 1)][$curx]
+                test $curx -gt 1 && \
+                    set left_basin_depth $$basin_grids[$cury][(math $curx - 1)]
+                test $curx -lt (count $$basin_grids[$cury]) && \
+                    set right_basin_depth $$basin_grids[$cury][(math $curx + 1)]
+
+                # at the bottom
+                if test $cur_basin_depth -lt $up_basin_depth && \
+                   test $cur_basin_depth -lt $down_basin_depth && \
+                   test $cur_basin_depth -lt $left_basin_depth && \
+                   test $cur_basin_depth -lt $right_basin_depth
+
+                   break
+                end
+
+                set $ball_grids[$cury][$curx] 0
+                if test $up_basin_depth -lt $cur_basin_depth && \
+                   test $up_basin_depth -le $down_basin_depth && \
+                   test $up_basin_depth -le $left_basin_depth && \
+                   test $up_basin_depth -le $right_basin_depth
+
+                    # roll balls up
+                    set cury (math $cury - 1)
+
+                else if test $down_basin_depth -lt $cur_basin_depth && \
+                    test $down_basin_depth -le $up_basin_depth && \
+                    test $down_basin_depth -le $left_basin_depth && \
+                    test $down_basin_depth -le $right_basin_depth
+
+                     # roll balls down
+                     set cury (math $cury + 1)
+
+                else if test $left_basin_depth -lt $cur_basin_depth && \
+                    test $left_basin_depth -le $up_basin_depth && \
+                    test $left_basin_depth -le $down_basin_depth && \
+                    test $left_basin_depth -le $right_basin_depth
+
+                    # roll balls left
+                    set curx (math $curx - 1)
+
+                else if test $right_basin_depth -lt $cur_basin_depth && \
+                    test $right_basin_depth -le $up_basin_depth && \
+                    test $right_basin_depth -le $down_basin_depth && \
+                    test $right_basin_depth -le $left_basin_depth
+
+                    # roll balls right
+                    set curx (math $curx + 1)
+
+                else
+                    # echo (count $$basin_grids[$cury]) :: $curx,$cury :: $cur_basin_depth : $left_basin_depth : $right_basin_depth : $up_basin_depth : $down_basin_depth
+                    echo >&2 "Panic!" && return 1
+                end
+                # roll balls
+                set $ball_grids[$cury][$curx] (math $$ball_grids[$cury][$curx] + $balls)
+            end
+        end
+    end
+
+    set basin_results
+    for ball_grid in $ball_grids
+        for num in $$ball_grid
+            if test $num -gt 0
+                set --append basin_results $num
+            end
+        end
+    end
+    set biggest_basins (echo $basin_results | string split ' ' | sort -n -r | head -n 3)
+    string join " x " $biggest_basins | math
 end
