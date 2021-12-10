@@ -5,14 +5,19 @@
 #     test -f "$datafile"; or echo >&2 "file expected" && return 1
 #     set part (string match --regex '.$' $part)
 #
-#     day{x}part$part
-#     day{x}cleanup
+#     day{x}part$part $datafile
 # end
 
-# function day{x}part1
+# function day{x}part1 \
+#     -- argument-names datafile
+#
+#     set --local data (cat $datafile)
 #     # insert code here
 # end
 
 # function day{x}part2
+#     -- argument-names datafile
+#
+#     set --local data (cat $datafile)
 #     # insert code here
 # end
