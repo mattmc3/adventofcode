@@ -1,0 +1,13 @@
+#!/usr/bin/env zsh
+
+# part1
+BASEDIR=${${(%):-%N}:a:h:h}
+awk '{print $1}' $BASEDIR/data/day1.dat | sort > $BASEDIR/data/day1_sorted1.dat
+awk '{print $2}' $BASEDIR/data/day1.dat | sort > $BASEDIR/data/day1_sorted2.dat
+paste $BASEDIR/data/day1_sorted1.dat $BASEDIR/data/day1_sorted2.dat > $BASEDIR/data/day1_sorted.dat
+awk 'function abs(x){return ((x < 0.0) ? -x : x)}
+         { sum += abs($1 - $2) }
+     END { print sum }' < $BASEDIR/data/day1_sorted.dat
+
+# part2
+
